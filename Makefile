@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -c -Iinclude
 
 OBJ = main.o
-BIN = programa
+BIN = appadd
 
 all: $(BIN)
 
