@@ -7,10 +7,12 @@ BIN = appadd
 all: $(BIN)
 
 $(BIN): ${OBJ}
-	$(CC) $^ -o $(BIN)
+	@echo "Compiled $(BIN) with success"
+	@$(CC) $^ -o $(BIN)
 
 %.o: src/%.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm *.o $(BIN)
+	@echo "Files removed"
+	@rm *.o $(BIN)
