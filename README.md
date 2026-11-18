@@ -42,7 +42,7 @@ Where `your/full/path/` is the path you are in, for example `~/Downloads/AppAdd/
 
 For example:
 ```bash
-sudo ln -s ~/Downloads/AppAdd/appadd /usr/local/bin/
+sudo ln -s ~/Downloads/AppAdd/appadd /usr/local/bin/appadd
 ```
 
 So now you can use `appadd` in any directory of your computer.
