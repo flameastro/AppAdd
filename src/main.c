@@ -16,14 +16,14 @@ void get_app_images(char app_images[QUANTITY][64]) {
     system("wget -q -nd https://github.com/flameastro/appImages/raw/main/files.txt");
     FILE *file = fopen("files.txt", "r");
 
-    int i = 0;
     char buffer[256];
     while (fgets(buffer, sizeof(buffer), file) != NULL) {
         buffer[strcspn(buffer, "\n")] = '\0'; // remove \n
-        strcpy(app_images[i], buffer);
-        i++;
+        strcpy(app_images[length], buffer);
         length++;
     }
+
+    fclose(file);
 
     system("rm files.txt");
 }
@@ -56,35 +56,49 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        char appimage[64];
-        strcpy(appimage, argv[2]);
-
         get_app_images(appimages); // update appimages variable
 
-        int found = 0;
-        for (int i = 0; i < length; i++) {
-            if (strcmp(appimage, appimages[i]) == 0) {
-                found = 1;
-                break;
+        for (int i = 2; i < argc; i++) {
+            char appimage[64] = "";
+            strcpy(appimage, argv[i]);
+
+            int found = 0;
+            for (int j = 0; j < length; j++) {
+                if (strcmp(appimage, appimages[j]) == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (found == 1) {
+                char command[256] = "";
+                snprintf(command, sizeof(command),
+                         "wget -q -O %s.AppImage https://github.com/flameastro/appImages/raw/main/apps/%s.AppImage",
+                         appimage, appimage);
+
+                char path[128];
+                snprintf(path, sizeof(path), "[ -f '%s/Downloads/%s.AppImage' ]", getenv("HOME"), appimage);
+
+                int exists = system(path);
+                if (exists == 0) {
+                    printf(RED "The %s.AppImage file already exists in " PURPLE "Downloads" RED " folder" RESET "\n",
+                           appimage);
+                } else {
+                    printf(GREEN "Downloading it..." RESET "\n");
+
+                    system(command);
+                    snprintf(command, sizeof(command), "mv %s.AppImage ~/Downloads\n", appimage);
+                    system(command);
+
+                    printf(GREEN "Located at " BOLD "~/Downloads/%s.AppImage" RESET "\n", appimage);
+                }
+
+            } else {
+                printf(RED "Cant find any appImage." RESET "\n");
             }
         }
 
-        if (found == 1) { // 1 = true
-            char command[256];
-            snprintf(command, sizeof(command),
-                     "wget -q -O %s.AppImage https://github.com/flameastro/appImages/raw/main/apps/%s.AppImage",
-                     appimage, appimage);
-            system(command);
-
-            snprintf(command, sizeof(command), "mv %s.AppImage ~/Downloads\n", appimage);
-
-            system(command);
-            printf(GREEN "Located at " BOLD "~/Downloads/%s.AppImage" RESET "\n", appimage);
-            exit(0); // success
-        }
-
-        printf(RED "Cant find any appImage." RESET "\n");
-        exit(1);
+        exit(0);
     }
 
     if (strcmp(argv[1], "uninstall") == 0) {
@@ -93,29 +107,37 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        get_app_images(appimages); // update appimages
+        get_app_images(appimages);
 
-        char appimage[64];
-        strcpy(appimage, argv[2]);
+        for (int i = 2; i < argc; i++) {
+            char appimage[64] = "";
+            strcpy(appimage, argv[i]);
 
-        int found = 0;
-        for (int i = 0; i < length; i++) {
-            if (strcmp(appimage, appimages[i]) == 0) {
-                found = 1;
-                break;
+            int found = 0;
+            for (int j = 0; j < length; j++) {
+                if (strcmp(appimage, appimages[j]) == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (found == 1) {
+                char command[128] = "";
+
+                snprintf(command, sizeof(command), "rm ~/Downloads/%s.AppImage 2>/dev/null", appimage);
+                int res = system(command);
+
+                if (res == 0) {
+                    printf(GREEN "AppImage was uninstalled successfully!" RESET "\n");
+                } else {
+                    printf(RED "File does not exists" RESET "\n");
+                }
+            } else {
+                printf(RED "AppImage file not found" RESET "\n");
             }
         }
 
-        if (found == 1) {
-            char command[128];
-
-            snprintf(command, sizeof(command), "rm ~/Downloads/%s*", appimage);
-            printf("%d", system(command));
-            exit(0);
-        }
-
-        printf(RED "AppImage file not found" RESET "\n");
-        exit(1);
+        exit(0);
     }
 
     printf(RED "Command not found. Try again." RESET "\n");
