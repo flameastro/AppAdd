@@ -4,10 +4,16 @@
 
 #define QUANTITY 16
 
+#define BOLD "\x1b[1m"
+#define RED "\x1b[31m"
+#define GREEN "\x1b[32m"
+#define PURPLE "\x1b[34m"
+#define RESET "\x1b[0m"
+
 int length = 0;
 
 void get_app_images(char app_images[QUANTITY][64]) {
-    system("wget -q -nd https://github.com/flameastro/appImages/raw/main/apps/files.txt");
+    system("wget -q -nd https://github.com/flameastro/appImages/raw/main/files.txt");
     FILE *file = fopen("files.txt", "r");
 
     int i = 0;
@@ -26,18 +32,19 @@ int main(int argc, char *argv[]) {
     char appimages[QUANTITY][64];
 
     if ((argc == 1) || (strcmp(argv[1], "help") == 0)) {
-        printf("help - get all the available commands\n");
-        printf("list - list all available appImages to download\n");
-        printf("install - install a specific appImage\n");
-        printf("uninstall - uninstall a specific appImage\n");
+        printf(GREEN "help - get all the available commands" RESET "\n");
+        printf(GREEN "list - list all available appImages to download" RESET "\n");
+        printf(GREEN "install - install a specific appImage" RESET "\n");
+        printf(GREEN "uninstall - uninstall a specific appImage" RESET "\n");
         exit(0);
     }
 
     if (strcmp(argv[1], "list") == 0) {
+        printf(GREEN "Listing all the available App Image files..." RESET "\n");
         get_app_images(appimages);
 
         for (int i = 0; i < length; i++) {
-            printf("%s\n", appimages[i]);
+            printf(BOLD PURPLE "%s" RESET "\n", appimages[i]);
         }
 
         exit(0);
@@ -45,18 +52,19 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(argv[1], "install") == 0) {
         if (argc == 2) {
-            printf("Cant install any appImage.\n");
+            printf(RED "Cant install any appImage." RESET "\n");
             exit(1);
         }
 
+        char appimage[64];
+        strcpy(appimage, argv[2]);
+
         get_app_images(appimages); // update appimages variable
 
-        int index = 0;
         int found = 0;
         for (int i = 0; i < length; i++) {
-            if (strcmp(argv[2], appimages[i]) == 0) {
+            if (strcmp(appimage, appimages[i]) == 0) {
                 found = 1;
-                index = i;
                 break;
             }
         }
@@ -65,21 +73,23 @@ int main(int argc, char *argv[]) {
             char command[256];
             snprintf(command, sizeof(command),
                      "wget -q -O %s.AppImage https://github.com/flameastro/appImages/raw/main/apps/%s.AppImage",
-                     appimages[index], appimages[index]);
+                     appimage, appimage);
             system(command);
 
-            system("mv *.AppImage ~/Downloads\n");
-            printf("Located at ~/Downloads/%s.AppImage\n", appimages[index]);
+            snprintf(command, sizeof(command), "mv %s.AppImage ~/Downloads\n", appimage);
+
+            system(command);
+            printf(GREEN "Located at " BOLD "~/Downloads/%s.AppImage" RESET "\n", appimage);
             exit(0); // success
         }
 
-        printf("Cant find any appImage.\n");
+        printf(RED "Cant find any appImage." RESET "\n");
         exit(1);
     }
 
     if (strcmp(argv[1], "uninstall") == 0) {
         if (argc == 2) {
-            printf("Cant uninstall any appImage.\n");
+            printf(RED "Cant uninstall any appImage." RESET "\n");
             exit(1);
         }
 
@@ -104,9 +114,12 @@ int main(int argc, char *argv[]) {
             exit(0);
         }
 
-        printf("AppImage file not found\n");
+        printf(RED "AppImage file not found" RESET "\n");
         exit(1);
     }
+
+    printf(RED "Command not found. Try again." RESET "\n");
+    exit(1);
 
     return 0;
 }
