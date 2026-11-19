@@ -12,36 +12,34 @@
 
 int length = 0;
 
-void get_app_images(char app_images[QUANTITY][64]) {
-    system("wget -q -nd https://github.com/flameastro/appImages/raw/main/files.txt");
-    FILE *file = fopen("files.txt", "r");
-
-    char buffer[256];
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        buffer[strcspn(buffer, "\n")] = '\0'; // remove \n
-        strcpy(app_images[length], buffer);
-        length++;
-    }
-
-    fclose(file);
-
-    system("rm files.txt");
-}
+void get_app_images(char app_images[QUANTITY][64], char *source);
 
 int main(int argc, char *argv[]) {
     char appimages[QUANTITY][64];
 
     if ((argc == 1) || (strcmp(argv[1], "help") == 0)) {
         printf(GREEN "help - get all the available commands" RESET "\n");
+        printf(GREEN "about - get detailed information about all the available commands" RESET "\n");
         printf(GREEN "list - list all available appImages to download" RESET "\n");
         printf(GREEN "install - install a specific appImage" RESET "\n");
         printf(GREEN "uninstall - uninstall a specific appImage" RESET "\n");
+
+        exit(0);
+    }
+
+    if (strcmp(argv[1], "about") == 0) {
+        get_app_images(appimages, "https://github.com/flameastro/appImages/raw/main/about.txt");
+
+        for (int i = 0; i < length; i++) {
+            printf("%s\n", appimages[i]);
+        }
+
         exit(0);
     }
 
     if (strcmp(argv[1], "list") == 0) {
         printf(GREEN "Listing all the available App Image files..." RESET "\n");
-        get_app_images(appimages);
+        get_app_images(appimages, "https://github.com/flameastro/appImages/raw/main/files.txt");
 
         for (int i = 0; i < length; i++) {
             printf(BOLD PURPLE "%s" RESET "\n", appimages[i]);
@@ -56,7 +54,8 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        get_app_images(appimages); // update appimages variable
+        get_app_images(appimages,
+                       "https://github.com/flameastro/appImages/raw/main/files.txt"); // update appimages variable
 
         for (int i = 2; i < argc; i++) {
             char appimage[64] = "";
@@ -107,7 +106,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
-        get_app_images(appimages);
+        get_app_images(appimages, "https://github.com/flameastro/appImages/raw/main/files.txt");
 
         for (int i = 2; i < argc; i++) {
             char appimage[64] = "";
@@ -144,4 +143,23 @@ int main(int argc, char *argv[]) {
     exit(1);
 
     return 0;
+}
+
+void get_app_images(char app_images[QUANTITY][64], char *source) {
+    char command[128];
+    snprintf(command, sizeof(command), "wget -q -nd -O output.txt %s", source);
+    system(command);
+
+    FILE *file = fopen("output.txt", "r");
+
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+        buffer[strcspn(buffer, "\n")] = '\0'; // remove \n
+        strcpy(app_images[length], buffer);
+        length++;
+    }
+
+    fclose(file);
+
+    system("rm output.txt");
 }
