@@ -10,13 +10,13 @@ Make sure you have the needed packages:
 
 ```bash
 # For Debian/Ubuntu users
-sudo apt update && sudo apt install git gcc make
+sudo apt update && sudo apt install git gcc make wget build-essential
 
 # For Fedora users
-sudo dnf install git gcc make
+sudo dnf install git gcc make wget build-essential
 
 # For Arch users
-sudo pacman -S git gcc make
+sudo pacman -S git gcc make wget build-essential
 ```
 
 Then clone the project:
